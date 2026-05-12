@@ -3,8 +3,8 @@
 URL = 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search'
 ASSET = "USDT"
 FIAT = "VES"
-PAGINAS = 5
-ARCHIVO_SALIDA = "output/historial_p2p.csv"
+PAGES = 5
+OUTPUT_FILE = "output/p2p_history.csv"
 USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',

@@ -2,3 +2,5 @@
 output/
 .vscode/
 venv/
+kepler.log
+__pycache__

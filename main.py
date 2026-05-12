@@ -5,14 +5,27 @@ import pandas as pd
 from core.scraper import fetch_page
 from core.processor import parse_announcements
 import config.settings as settings
+from core.logger import get_logger
 
-def ejecutar_ciclo():
-    """Ejecuta una ráfaga de captura de 5 páginas (50 anuncios)."""
-    datos_ciclo = []
+
+log = get_logger("Kepler")
+
+def run_cycle():
+    """
+    Orchestrates a single data collection cycle.
     
-    print(f"\nIniciando captura: {settings.PAGINAS} páginas...")
+    This function performs the following steps:
+    1. Iterates through the number of pages defined in settings.
+    2. Fetches each page from the Binance P2P API.
+    3. Parses the announcements from the JSON response.
+    4. Aggregates all data and saves it to a CSV file.
+    5. Implements random delays between requests to avoid rate limiting.
+    """
+    cycle_data = []
     
-    for p in range(1, settings.PAGINAS + 1):
+    log.info(f"Starting capture: {settings.PAGES} pages...")
+    
+    for p in range(1, settings.PAGES + 1):
 
         payload = {
             "asset": settings.ASSET,
@@ -26,41 +39,45 @@ def ejecutar_ciclo():
             "classifies": ["mass", "profession", "fiat_trade"]
         }
         
-        json_data = fetch_page(payload)
+        try:
+            json_data = fetch_page(payload)
         
-        if json_data:
-            anuncios = parse_announcements(json_data, p)
-            datos_ciclo.extend(anuncios)
-            print(f"Página {p} capturada ({len(anuncios)} anuncios).")
-        else:
-            print(f"Fallo en página {p}. Saltando...")
+            if json_data:
+                announcements = parse_announcements(json_data, p)
+                cycle_data.extend(announcements)
+                log.debug(f"Page {p} processed ({len(announcements)} announcements).")
+            else:
+                log.warning(f"Empty response on page {p}. Skipping...")
         
+        except Exception as e:
+            log.error(f"Critical error on page {p}: {e}")
+
         time.sleep(random.uniform(1.5, 3.5))
 
-    if datos_ciclo:
-        df = pd.DataFrame(datos_ciclo)
-        existe = os.path.isfile(settings.ARCHIVO_SALIDA)
-        df.to_csv(settings.ARCHIVO_SALIDA, mode='a', index=False, header=not existe)
-        print(f"Total: {len(datos_ciclo)} anuncios guardados en {settings.ARCHIVO_SALIDA}")
+    if cycle_data:
+        df = pd.DataFrame(cycle_data)
+        exists = os.path.isfile(settings.OUTPUT_FILE)
+        df.to_csv(settings.OUTPUT_FILE, mode='a', index=False, header=not exists)
+        log.info(f"Cycle completed. {len(cycle_data)} announcements dumped to {settings.OUTPUT_FILE}")
     else:
-        print("No se recolectaron datos en este ciclo.")
+        log.warning("Cycle finished without data collected.")
 
 
 if __name__ == "__main__":
-    print("Minero del Tártaro ONLINE")
+    log.info("--- Kepler Miner ONLINE ---")
 
     while True:
         try:
-            ejecutar_ciclo()
+            run_cycle()
             
-            espera = random.randint(280, 340) 
-            print(f"Durmiendo por {espera} segundos...")
-            time.sleep(espera)
+            wait_time = random.randint(280, 340) 
+            log.debug(f"Waiting. Next pulse in {wait_time} seconds...")
+            time.sleep(wait_time)
             
         except KeyboardInterrupt:
-            print("\n Minería detenida por el usuario. Saliendo...")
+            log.info("Mining stopped manually by the user. Closing data collection.")
             break
         except Exception as e:
-            print(f"\n Error inesperado en el orquestador: {e}")
-            print("Reintentando en 60 segundos...")
+            log.critical(f"Catastrophic failure in the orchestrator: {e}")
+            log.info("Retrying resuscitation in 60 seconds...")
             time.sleep(60)
