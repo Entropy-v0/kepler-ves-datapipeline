@@ -1,82 +1,86 @@
-# Kepler Miner 🛰️
+# P2P Market Sentinel 🛰️
 
-Kepler is a robust P2P market sentinel designed to monitor and collect historical data from the Binance P2P marketplace. It automates the process of capturing advertisements, processing merchant information, and logging market trends for financial data science analysis.
+P2P Market Sentinel is a robust and resilient data pipeline designed to monitor and collect historical data from the Binance P2P marketplace. It automates the process of capturing advertisements, processing merchant information, and ensuring high-quality data persistence for financial science analysis.
 
-## ✨ Features
+---
 
-- **Automated Data Collection**: Captures multiple pages of P2P advertisements at regular intervals.
-- **Smart Processing**: Extracts key metrics including price, availability, transaction limits, merchant success rates, and payment methods.
-- **CSV Persistence**: Automatically appends captured data to a structured CSV file for long-term analysis.
-- **Modular Architecture**: Clean separation between scraping, processing, logging, and configuration.
-- **Robust Logging**: Dual-handler system providing detailed console output (DEBUG) and persistent file logs (INFO).
-- **Anti-Detection**: Implements random delays and randomized User-Agents to ensure stable collection cycles.
+## ✨ Key Features
+
+- **Resilient Data Collection**: Implements a robust retry strategy with **Exponential Backoff** using `urllib3` to handle network micro-outages and API Rate Limiting (429).
+- **Graceful Shutdown**: Handles `SIGINT` (Ctrl+C) and `SIGTERM` signals to ensure data integrity and clean resource closure.
+- **Dual Persistence**: Simultaneously secures data in structured **CSV** files (for local analysis) and **PostgreSQL** (for scalable applications).
+- **Secure Configuration**: Fully integrates `python-dotenv` for credential management and uses SQLAlchemy's secure URL construction to prevent injection.
+- **Docker Ready**: Includes an optimized containerization setup for easy deployment and environment consistency.
+- **Data Quality Oriented**: Architecture prepared for contract testing and cross-storage integrity audits.
+
+---
 
 ## 📂 Project Structure
 
 ```text
 .
 ├── config/
-│   └── settings.py      # API URLs, assets, and collection parameters
+│   └── settings.py      # Centralized dynamic configuration
 ├── core/
-│   ├── logger.py        # Centralized logging configuration
-│   ├── processor.py     # Data parsing and cleaning logic
-│   └── scraper.py       # HTTP request orchestration
-├── output/
-│   └── p2p_history.csv  # Collected market data
-├── scripts/
-├── main.py              # Main execution orchestrator
+│   ├── logger.py        # Dual-handler logging system
+│   ├── processor.py     # Data transformation logic
+│   ├── scraper.py       # Robust HTTP extraction with retries
+│   ├── services.py      # Payload construction utilities
+│   └── storage.py       # Dual persistence (CSV/SQL) handlers
+├── data/
+│   └── raw/             # Historical P2P data (CSV)
+├── logs/                # System execution logs
+├── Dockerfile           # Optimized Python 3.11-slim image
+├── docker-compose.yml   # Multi-container orchestration (App + DB)
+├── main.py              # Main orchestrator (Entry point)
 └── requirements.txt     # Project dependencies
 ```
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+- Docker & Docker Compose (Recommended)
+- OR Python 3.11+ and PostgreSQL
 
-- Python 3.8+
-- Virtual environment (recommended)
-
-### Installation
-
-1. Clone the repository:
+### Fast Track with Docker
+1. Configure your credentials in `.env`:
+   ```env
+   DB_USER=postgres
+   DB_PASS=your_password
+   DB_NAME=kepler_db
+   DB_PORT=5432
+   ```
+2. Launch the experiment:
    ```bash
-   git clone <repository-url>
-   cd p2p-market-sentinel
+   docker-compose up --build
    ```
 
-2. Create and activate a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. Install dependencies:
+### Manual Installation
+1. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-
-## 🛠️ Usage
-
-To start the miner, simply run:
-
-```bash
-python main.py
-```
-
-The miner will initiate cycles every few minutes (randomized) and dump the collected data into `output/p2p_history.csv`.
-
-## ⚙️ Configuration
-
-You can customize the miner's behavior in `config/settings.py`:
-
-- `ASSET`: The cryptocurrency to monitor (e.g., "USDT").
-- `FIAT`: The local currency (e.g., "VES").
-- `PAGES`: Number of pages to capture per cycle.
-- `OUTPUT_FILE`: Path to the CSV storage.
-
-
-## 📝 Logging
-
-Kepler generates logs in `kepler.log`. The logs follow a rotating strategy to manage disk space efficiently.
+2. Run the orchestrator:
+   ```bash
+   python main.py
+   ```
 
 ---
-*Developed for Financial Data Science Analysis.*
+
+## ⚙️ Configuration
+The system is highly configurable via `config/settings.py`:
+- `ASSET`: Cryptocurrency to monitor (default: `USDT`).
+- `FIAT`: Local currency (default: `VES`).
+- `PAGES`: Number of pages to capture per cycle.
+- `RAW_DATA_DIR`: Path for CSV storage (`data/raw`).
+- `LOGS_DIR`: Path for system logs (`logs`).
+
+---
+
+## 📝 Quality and Audit
+This project underwent a professional software audit. Detailed findings, remediation steps, and the quality assurance plan can be found in the `audit-workspace/` directory.
+
+---
+*Developed for Financial Data Science Experiments.*

@@ -8,25 +8,30 @@ log = get_logger("Storage")
 
 class DataStorage:
     def __init__(self):
-        self.db_user = os.getenv('DB_USER')
-        self.db_pass = os.getenv('DB_PASS')
-        self.db_host = os.getenv('DB_HOST')
-        self.db_port = os.getenv('DB_PORT', '5432')
-        self.db_name = os.getenv('DB_NAME')
+        from sqlalchemy.engine import URL
         
         self.csv_path = settings.RAW_FILE
         
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.csv_path), exist_ok=True)
+        
         try:
-            self.engine = create_engine(
-                f'postgresql://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}'
+            url_object = URL.create(
+                "postgresql",
+                username=settings.DB_USER,
+                password=settings.DB_PASS,
+                host=settings.DB_HOST,
+                port=settings.DB_PORT,
+                database=settings.DB_NAME,
             )
+            self.engine = create_engine(url_object)
             log.info("Storage initialized: PostgreSQL connection engine ready.")
         except Exception as e:
             log.error(f"Failed to initialize DB engine: {e}")
             self.engine = None
 
     def save_to_csv(self, df):
-        """Maneja la persistencia en el CSV para Kaggle."""
+        """Handles persistence to CSV for local analysis."""
         try:
             exists = os.path.isfile(self.csv_path)
             df.to_csv(self.csv_path, mode='a', index=False, header=not exists)
@@ -35,13 +40,13 @@ class DataStorage:
             log.error(f"Error saving to CSV: {e}")
 
     def save_to_db(self, df):
-        """Maneja la persistencia en PostgreSQL para ML/Streamlit."""
+        """Handles persistence to PostgreSQL for ML/Streamlit applications."""
         if self.engine is None:
             log.warning("PostgreSQL engine not available. Skipping DB save.")
             return
 
         try:
-            # 'if_exists=append' es clave para no borrar los datos anteriores
+            # 'if_exists=append' is key to avoid overwriting previous data
             df.to_sql('p2p_ads', self.engine, if_exists='append', index=False)
             log.debug("Data successfully pushed to PostgreSQL (table: p2p_ads).")
         except Exception as e:
@@ -49,8 +54,8 @@ class DataStorage:
 
     def process_cycle_data(self, cycle_data):
         """
-        Punto de entrada principal. Recibe la lista de diccionarios, 
-        la convierte en DataFrame y la distribuye.
+        Main entry point. Receives a list of dictionaries, 
+        converts it to a DataFrame, and distributes it to storage handlers.
         """
         if not cycle_data:
             log.warning("No data received to save.")

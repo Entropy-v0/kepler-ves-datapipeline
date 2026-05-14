@@ -2,8 +2,8 @@ import config.settings as settings
 
 def get_p2p_payload(page_num, trade_type="BUY",asset=None, fiat=None):
     """
-    Construye el payload para Binance. 
-    Permite sobrescribir el asset o fiat si el backend lo pide.
+    Builds the payload for Binance P2P API.
+    Allows overriding asset or fiat if requested by the backend.
     """
     return {
         "asset": asset or settings.ASSET,

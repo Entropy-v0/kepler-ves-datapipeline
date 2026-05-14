@@ -1,0 +1,8 @@
+postgres_data/
+data/
+logs/
+venv/
+**/.git
+**/__pycache__
+.dockerignore
+scripts/

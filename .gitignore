@@ -4,3 +4,18 @@ output/
 venv/
 kepler.log
 __pycache__
+
+# Auditoría y Reportes
+audit-workspace/
+
+# Datos crudos y temporales
+data/raw/*
+
+postgres_data/
+data/
+logs/
+venv/
+**/.git
+**/__pycache__
+.dockerignore
+scripts/
