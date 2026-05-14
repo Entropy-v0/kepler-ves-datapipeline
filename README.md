@@ -33,6 +33,7 @@ The ecosystem is fully containerized using **Docker Compose**, ensuring absolute
 │  │ └── notebooks/ (EDA, NumPy & Scikit-Learn)   │      │
 │  └──────────────────────────────────────────────┘      │
 └────────────────────────────────────────────────────────┐
+```
 
 ---
 
