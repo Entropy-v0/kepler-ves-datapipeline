@@ -1,2 +1,3 @@
 pandas==3.0.3
-Requests==2.34.0
+Requests==2.34.1
+SQLAlchemy==2.0.49
