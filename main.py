@@ -3,7 +3,6 @@ import time
 import random
 from dotenv import load_dotenv
 
-# Initialize environment variables
 load_dotenv()
 
 import config.settings as settings

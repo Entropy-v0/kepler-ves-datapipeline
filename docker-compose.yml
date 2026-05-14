@@ -32,3 +32,18 @@ services:
       - ./config:/app/config
     tty: true
     stdin_open: true
+
+  notebook:
+    image: jupyter/datascience-notebook:latest
+    container_name: kepler_lab
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/home/jovyan/work/data
+      - ./notebooks:/home/jovyan/work/notebooks
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=kepler123 
+    depends_on:
+      - db
