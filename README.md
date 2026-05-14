@@ -68,7 +68,8 @@ The ecosystem is fully containerized using **Docker Compose**, ensuring absolute
 ├── notebooks/           # Shared volume: ML experiments & EDA (.ipynb)
 ├── Dockerfile           # Optimized production image (Python 3.11-slim)
 ├── docker-compose.yml   # Infrastructure orchestration
-└── requirements.txt     # Kepler bot dependencies```
+└── requirements.txt     # Kepler bot dependencies
+```
 
 ---
 
@@ -86,11 +87,13 @@ The ecosystem is fully containerized using **Docker Compose**, ensuring absolute
     DB_NAME=kepler_analytics
     DB_PORT=5432
     MACHINE_NAME=Sentinel_VES_01
+    ```
 
 2. Deploy Infrastructure:
 
 ```bash 
-docker-compose up --build -d```
+docker-compose up --build -d
+```
 
 3.  **Access the Lab**:
     *   Open your browser at `http://localhost:8888`
