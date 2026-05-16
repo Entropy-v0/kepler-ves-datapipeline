@@ -7,14 +7,16 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
+
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     ports:
       - "${DB_PORT}:5432"
 
   kepler:
-    build: .
-    container_name: kepler
+    build:
+      context: ./apps/kepler
+    container_name: kepler_bot
     restart: always
     depends_on:
       - db
@@ -29,9 +31,28 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
-      - ./config:/app/config
+      - ./apps/kepler/config:/app/config
     tty: true
     stdin_open: true
+
+  analytics-java:
+    build:
+      context: ./apps/analytics-engine
+      dockerfile: Dockerfile
+    container_name: kepler_analytics
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+      - ANALYTICS_INTERVAL_SECONDS=${ANALYTICS_INTERVAL_SECONDS}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
 
   notebook:
     image: jupyter/datascience-notebook:latest
@@ -44,6 +65,6 @@ services:
       - ./notebooks:/home/jovyan/work/notebooks
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - JUPYTER_TOKEN=kepler123 
+      - JUPYTER_TOKEN=kepler123
     depends_on:
       - db

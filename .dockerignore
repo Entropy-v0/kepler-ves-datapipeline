@@ -4,5 +4,17 @@ logs/
 venv/
 **/.git
 **/__pycache__
-.dockerignore
-scripts/
+target/
+
+# IDEs
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.DS_Store
+
+# Jupyter
+notebook/
+notebooks/
+**/.ipynb_checkpoints/

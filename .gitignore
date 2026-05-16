@@ -9,13 +9,21 @@ __pycache__
 audit-workspace/
 
 # Datos crudos y temporales
-data/raw/*
-
-postgres_data/
 data/
+postgres_data/
 logs/
+
+# Entornos y binarios
 venv/
 **/.git
 **/__pycache__
-.dockerignore
 scripts/
+**/target/
+
+# IDEs
+.idea/
+*.iml
+.metadata/
+
+# Jupyter
+**/.ipynb_checkpoints/

@@ -1,13 +1,15 @@
 import pandas as pd
 import datetime
 
-def parse_announcements(json_data, page_num):
+def parse_announcements(json_data, page_num,trade_type, fiat):
     """
     Parses raw JSON data from the Binance P2P API into a list of structured dictionaries.
     
     Args:
         json_data (dict): The raw JSON response from the API.
         page_num (int): The current page number being processed (for metadata).
+        trade_type (str): Market side being processed ('BUY' or 'SELL').
+        fiat (str): The fiat currency being scraped (e.g. 'VES').
         
     Returns:
         list: A list of dictionaries, each containing extracted information such as 
@@ -26,6 +28,8 @@ def parse_announcements(json_data, page_num):
 
             extracted.append({
                 'timestamp': timestamp,
+                'trade_type': trade_type,
+                'fiat': fiat,
                 'page': page_num,
                 'merchant': item['advertiser']['nickName'],
                 'banks': banks_string,

@@ -1,118 +1,87 @@
-# 🛰️ Kepler: P2P VES Market Sentinel
-### *High-Performance Data Engineering Pipeline & Predictive Analytics for Binance P2P (Venezuela)*
+# Kepler: High-Frequency Market Intelligence Engine
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Multi--Container-blue.svg)](https://www.docker.com/)
-[![Database](https://img.shields.io/badge/Database-PostgreSQL-blue.svg)](https://www.postgresql.org/)
-[![Stack](https://img.shields.io/badge/Stack-Pandas%20%7C%20NumPy%20%7C%20SkLearn-orange.svg)]()
+A high-performance data engineering pipeline designed to monitor, ingest, and analyze the Binance P2P marketplace in Venezuela. This project transitions from a simple scraper to a robust ETL (Extract, Transform, Load) system, capturing high-frequency financial data to identify market trends and liquidity patterns.
 
-**Kepler** is a high-performance data engineering pipeline designed to monitor, ingest, and analyze the Binance P2P marketplace in Venezuela. This project transitions from a simple scraper to a robust **ETL (Extract, Transform, Load)** system, capturing high-frequency financial data to drive statistical analysis, identify liquidity patterns, and feed predictive Machine Learning models in a high-volatility environment.
+## 🚀 Key Features
 
----
+* **Rigorous Statistical Filtering**: Utilization of Median (50th Percentile) over Arithmetic Mean to mitigate the impact of outliers and false market intentions.
+* **Volatility Detection (StdDev)**: Calculation of standard deviation directly in the data layer to measure the level of uncertainty and price dispersion in each operational cycle.
+* **"Container-First" Architecture**: Fully decoupled components via Docker (Ingestion, Persistence, Analytics, and Data Science), ensuring immutability, portability, and frictionless deployment in any on-premise or cloud environment.
 
-## 🏗️ Multi-Container Architecture
+## 🏗️ Architecture Diagram
 
-The ecosystem is fully containerized using **Docker Compose**, ensuring absolute portability and eliminating the need for local virtual environments (`venv`).
+Kepler operates under an asynchronous producer-consumer pattern, utilizing a relational database as a broker and transactional persistence layer. Additionally, an interactive Data Science environment is integrated for in-depth analysis of the persisted data.
+
+```mermaid
+flowchart LR
+    A[Binance P2P API] -->|Polling| B(Python Scraper - kepler_bot)
+    B -->|Raw Ingestion| C[(PostgreSQL - kepler_db)]
+    C -->|SQL Aggregation| D(Java Engine - kepler_analytics)
+    D -->|Metrics & Log| E[Market Reports / CSV]
+    E -.->|Read| F(Jupyter Lab - kepler_lab)
+    C -.->|DCL Queries| F
+
+    classDef default fill:#1a1a1a,stroke:#333,stroke-width:1px,color:#fff;
+    classDef db fill:#005571,stroke:#008bb9,stroke-width:1px,color:#fff;
+    classDef engine fill:#b07219,stroke:#e39b2d,stroke-width:1px,color:#fff;
+    classDef python fill:#3572A5,stroke:#4B8BBE,stroke-width:1px,color:#fff;
+    classDef jupyter fill:#f37726,stroke:#d05c14,stroke-width:1px,color:#fff;
+    
+    class A default;
+    class B python;
+    class C db;
+    class D engine;
+    class E default;
+    class F jupyter;
+```
+
+## 🧠 Technical Deep Dive
+
+The design of the Kepler ecosystem prioritizes performance, accuracy, and long-term maintainability through 4 specialized microservices:
+
+* **Ingestion (`kepler_bot` - Python)**: Chosen for its robust ecosystem in network manipulation and JSON parsing. It acts as the *edge node* that interacts with the external API, transforming unstructured payloads into a strict relational schema.
+* **Analytical Processing (`kepler_analytics` - Java 21)**: The intelligence layer is built in Java due to its strict typing, efficient memory management, and high concurrency capabilities. Java ensures that the underlying business logic is deterministic and protected against runtime mutation errors.
+* **Data Layer Aggregation (`kepler_db` - PostgreSQL)**: Instead of saturating the JVM or the Python interpreter with heavy statistical calculations, complex functions like `PERCENTILE_CONT(0.5)` and `STDDEV()` are delegated to the database engine. This minimizes network I/O and leverages PostgreSQL's query optimizer for ultra-fast computation over time windows (e.g., the last 10 minutes).
+* **Scientific Exploration (`kepler_lab` - Jupyter)**: Provides an interactive and pre-configured environment for data scientists to connect to the database or read generated CSVs, allowing for model prototyping and visualizations without affecting production pipeline latency.
+
+## ⚙️ Quick Start
+
+Deployment is fully automated via Docker Compose. The entire ecosystem initializes synchronously alongside their respective persistent volumes.
+
+1. Configure the environment:
+```bash
+cp .env.example .env
+# Edit .env according to your needs (DB_USER, DB_PASS, etc.)
+```
+
+2. Spin up the infrastructure:
+```bash
+docker compose up -d
+```
+
+3. Verify real-time processing logs:
+```bash
+docker compose logs -f analytics-java
+```
+
+4. Access the Data Science environment:
+Open your browser at `http://localhost:8888` and use the token configured in your `docker-compose.yml` file (default: `kepler123`).
+
+## 📊 Metrics Visualization
+
+Once initialized, the Java engine generates structured reports visible in the terminal and persists them in CSV format within the `/data/analytics/` volume for subsequent consumption:
 
 ```text
-[ Binance P2P API ]
-        │
-        ▼ (Urllib3 + Exponential Backoff)
-┌────────────────────────────────────────────────────────┐
-│ Docker Compose Infrastructure                          │
-│                                                        │
-│  ┌────────────────┐      ┌──────────────┐              │
-│  │ kepler_engine  │─────►│  kepler_db   │              │
-│  │ (Python ETL)   │      │ (PostgreSQL) │              │
-│  └───────┬────────┘      └──────────────┘              │
-│          │                                             │
-│          ▼ (Shared Volume /data)                       │
-│  ┌──────────────────────────────────────────────┐      │
-│  │ kepler_lab                                   │      │
-│  │ (Jupyter Datascience Notebook)               │      │
-│  │ └── notebooks/ (EDA, NumPy & Scikit-Learn)   │      │
-│  └──────────────────────────────────────────────┘      │
-└────────────────────────────────────────────────────────┐
+2026-05-16 21:56:55 | INFO     | ╔══════════════ MARKET REPORT [VES/USDT] ══════════════╗
+2026-05-16 21:56:55 | INFO     |   Timestamp      : 2026-05-16 21:56:55
+2026-05-16 21:56:55 | INFO     |   BUY  avg price : 699.92 VES
+2026-05-16 21:56:55 | INFO     |   SELL avg price : 695.76 VES
+2026-05-16 21:56:55 | INFO     |   Spread         : 4.16 VES  (0.598%)
+2026-05-16 21:56:55 | INFO     |   Range BUY      : 35.65 VES
+2026-05-16 21:56:55 | INFO     |   Range SELL     : 36.60 VES
+2026-05-16 21:56:55 | INFO     |   Top BUY merch  : Manda2-
+2026-05-16 21:56:55 | INFO     |   Top SELL merch : Godisgift
+2026-05-16 21:56:55 | INFO     |   Dominant bank  : Banesco
+2026-05-16 21:56:55 | INFO     |   Records        : 202 BUY / 201 SELL
+2026-05-16 21:56:55 | INFO     | ╚══════════════════════════════════════════════════════╝
 ```
-
----
-
-## ✨ Key Features
-
-### 🔹 Data Engineering (ETL)
-*   **Resilient Extraction**: Implements an **Exponential Backoff** retry strategy via `urllib3` to mitigate network micro-outages and API Rate Limiting (HTTP 429).
-*   **Graceful Shutdown**: Handles `SIGINT` and `SIGTERM` signals to ensure data integrity and clean database connection closure.
-*   **Dual Storage Engine**: Simultaneous hybrid persistence in **PostgreSQL** (for massive historical data) and **CSV** (for fast in-memory analysis).
-*   **Secure Configuration**: Strict environment variable isolation using `.env` and secure URI construction with `SQLAlchemy`.
-
-### 🔹 Data Science & AI
-*   **Isolated Sandbox**: Integrated **JupyterLab** environment with direct access to datasets generated by the bot.
-*   **Statistical Analytics**: **Pandas** and **NumPy** scripts for data cleaning, spread calculation, and financial outlier removal (specifically tailored for the Venezuelan market).
-*   **Predictive Modeling**: **Linear Regression** implementation using **Scikit-Learn** to forecast price trends based on orderbook volume and merchant reputation.
-
----
-
-## 📂 Project Structure
-
-```text
-.
-├── config/              # Dynamic configuration and global variables
-├── core/                # Core ETL logic
-│   ├── logger.py        # Dual-handler logging system (Console + File)
-│   ├── processor.py     # Data transformation and schema validation
-│   ├── scraper.py       # Robust HTTP extraction engine
-│   ├── storage.py       # Dual persistence handlers (CSV/SQL)
-│   └── services.py      # API utilities and payload construction
-├── data/
-│   └── raw/             # Shared volume: Historical datasets (CSV)
-├── notebooks/           # Shared volume: ML experiments & EDA (.ipynb)
-├── Dockerfile           # Optimized production image (Python 3.11-slim)
-├── docker-compose.yml   # Infrastructure orchestration
-└── requirements.txt     # Kepler bot dependencies
-```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-*   Docker & Docker Compose installed.
-
-### Quick Start
-
-1.  **Configure Environment Variables**: Create a `.env` file in the root directory:
-    ```env
-    DB_USER=kepler_admin
-    DB_PASS=your_secure_password
-    DB_NAME=kepler_analytics
-    DB_PORT=5432
-    MACHINE_NAME=Sentinel_VES_01
-    ```
-
-2. Deploy Infrastructure:
-
-```bash 
-docker-compose up --build -d
-```
-
-3.  **Access the Lab**:
-    *   Open your browser at `http://localhost:8888`
-    *   Access Token: `kepler123`
-
----
-
-## ⚙️ Pipeline Configuration
-
-Kepler's behavior can be tuned in `config/settings.py` or via environment variables:
-*   **`ASSET`**: Target cryptocurrency (e.g., `USDT`).
-*   **`FIAT`**: Market currency (e.g., `VES`).
-*   **`PAGES`**: Depth of advertisement capture per cycle.
-
----
-
-## 📈 Quality and Audit
-
-This pipeline incorporates strict monitoring practices, dual-entry logging validation, and structured data-integrity audits between the PostgreSQL storage engine and the exported CSV raw files to prevent data drift during active ingestion cycles.
-
----
-*Developed for Advanced Financial Data Science & ETL Architecture Experiments.*
