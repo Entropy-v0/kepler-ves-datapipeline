@@ -1,5 +1,11 @@
 # Kepler: High-Frequency Market Intelligence Engine
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Java 21](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=java&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Jupyter](https://img.shields.io/badge/Jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white)
+
 A high-performance data engineering pipeline designed to monitor, ingest, and analyze the Binance P2P marketplace in Venezuela. This project transitions from a simple scraper to a robust ETL (Extract, Transform, Load) system, capturing high-frequency financial data to identify market trends and liquidity patterns.
 
 ## 🚀 Key Features
@@ -7,6 +13,8 @@ A high-performance data engineering pipeline designed to monitor, ingest, and an
 * **Rigorous Statistical Filtering**: Utilization of Median (50th Percentile) over Arithmetic Mean to mitigate the impact of outliers and false market intentions.
 * **Volatility Detection (StdDev)**: Calculation of standard deviation directly in the data layer to measure the level of uncertainty and price dispersion in each operational cycle.
 * **"Container-First" Architecture**: Fully decoupled components via Docker (Ingestion, Persistence, Analytics, and Data Science), ensuring immutability, portability, and frictionless deployment in any on-premise or cloud environment.
+
+
 
 ## 🏗️ Architecture Diagram
 
